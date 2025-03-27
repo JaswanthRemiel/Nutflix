@@ -1,13 +1,10 @@
 import 'dotenv/config';
-import express from 'express';
 import axios from 'axios';
-
-const app = express();
 
 const OMDB_API_KEY = process.env.API_KEY;
 const OMDB_API_URL = 'http://www.omdbapi.com/';
 
-
+// ✅ Function to fetch movie details
 async function fetchMovie(title) {
     if (!title) {
         return { status: 400, body: { error: "Title query parameter is required" } };
@@ -25,23 +22,11 @@ async function fetchMovie(title) {
     }
 }
 
-app.get('/api/movies', async (req, res) => {
-    const { status, body } = await fetchMovie(req.query.title);
-    res.status(status).json(body);
-});
-
-
+// ✅ Appwrite Function (Fixes `res.status is not a function`)
 export default async ({ req, res }) => {
     const url = new URL(req.url, 'http://localhost');
     const title = url.searchParams.get('title');
     const { status, body } = await fetchMovie(title);
-    return res.status(status).json(body);
+
+    return res.json(body, status);  // ✅ Correct usage for Appwrite functions
 };
-
-
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
-}
