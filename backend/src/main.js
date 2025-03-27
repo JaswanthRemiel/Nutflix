@@ -1,8 +1,12 @@
-import { Client } from 'node-appwrite';
+import 'dotenv/config';
+import express from 'express';
 import axios from 'axios';
+
+const app = express();
 
 const OMDB_API_KEY = process.env.API_KEY;
 const OMDB_API_URL = 'http://www.omdbapi.com/';
+
 
 async function fetchMovie(title) {
     if (!title) {
@@ -10,7 +14,7 @@ async function fetchMovie(title) {
     }
     try {
         const response = await axios.get(`${OMDB_API_URL}?t=${title}&apikey=${OMDB_API_KEY}`);
-        
+
         if (response.data.Response === "False") {
             return { status: 404, body: { error: "Movie not found in the database" } };
         }
@@ -21,25 +25,21 @@ async function fetchMovie(title) {
     }
 }
 
-// ✅ Appwrite Cloud Function
+app.get('/api/movies', async (req, res) => {
+    const { status, body } = await fetchMovie(req.query.title);
+    res.status(status).json(body);
+});
+
+
 export default async ({ req, res }) => {
     const url = new URL(req.url, 'http://localhost');
     const title = url.searchParams.get('title');
-
     const { status, body } = await fetchMovie(title);
     return res.status(status).json(body);
 };
 
-// ✅ Local Server (for testing)
-if (require.main === module) {
-    const express = require('express');
-    const app = express();
 
-    app.get('/api/movies', async (req, res) => {
-        const { status, body } = await fetchMovie(req.query.title);
-        res.status(status).json(body);
-    });
-
+if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
