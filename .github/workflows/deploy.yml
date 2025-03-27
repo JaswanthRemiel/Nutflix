@@ -30,6 +30,6 @@ jobs:
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        token: ${{ secrets.GH_PAT }}  # Use your GitHub Personal Access Token (PAT)
+        token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
         folder: frontend/dist
