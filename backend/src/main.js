@@ -1,35 +1,47 @@
-import { Client, Users } from 'node-appwrite';
+import { Client } from 'node-appwrite';
+import axios from 'axios';
 
-// This Appwrite function will be executed every time your function is triggered
-export default async ({ req, res, log, error }) => {
-  // You can use the Appwrite SDK to interact with other services
-  // For this example, we're using the Users service
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
-    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(req.headers['x-appwrite-key'] ?? '');
-  const users = new Users(client);
+const OMDB_API_KEY = process.env.API_KEY;
+const OMDB_API_URL = 'http://www.omdbapi.com/';
 
-  try {
-    const response = await users.list();
-    // Log messages and errors to the Appwrite Console
-    // These logs won't be seen by your end users
-    log(`Total users: ${response.total}`);
-  } catch(err) {
-    error("Could not list users: " + err.message);
-  }
+async function fetchMovie(title) {
+    if (!title) {
+        return { status: 400, body: { error: "Title query parameter is required" } };
+    }
+    try {
+        const response = await axios.get(`${OMDB_API_URL}?t=${title}&apikey=${OMDB_API_KEY}`);
+        
+        if (response.data.Response === "False") {
+            return { status: 404, body: { error: "Movie not found in the database" } };
+        }
+        return { status: 200, body: response.data };
+    } catch (error) {
+        console.error("Error fetching data from API:", error);
+        return { status: 500, body: { error: "Internal Server Error" } };
+    }
+}
 
-  // The req object contains the request data
-  if (req.path === "/ping") {
-    // Use res object to respond with text(), json(), or binary()
-    // Don't forget to return a response!
-    return res.text("Pong");
-  }
+// ✅ Appwrite Cloud Function
+export default async ({ req, res }) => {
+    const url = new URL(req.url, 'http://localhost');
+    const title = url.searchParams.get('title');
 
-  return res.json({
-    motto: "Build like a team of hundreds_",
-    learn: "https://appwrite.io/docs",
-    connect: "https://appwrite.io/discord",
-    getInspired: "https://builtwith.appwrite.io",
-  });
+    const { status, body } = await fetchMovie(title);
+    return res.status(status).json(body);
 };
+
+// ✅ Local Server (for testing)
+if (require.main === module) {
+    const express = require('express');
+    const app = express();
+
+    app.get('/api/movies', async (req, res) => {
+        const { status, body } = await fetchMovie(req.query.title);
+        res.status(status).json(body);
+    });
+
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
