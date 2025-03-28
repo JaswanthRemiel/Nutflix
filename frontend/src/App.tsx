@@ -4,6 +4,7 @@ export default function App() {
   const [query, setQuery] = useState<string>("");
   const [data, setData] = useState<Movie | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   interface Movie {
     Title: string;
@@ -17,7 +18,7 @@ export default function App() {
   const fetchData = async () => {
     if (!query) return;
     setLoading(true);
-    setData(null);
+    setError(null);
 
     try {
       const response = await fetch(
@@ -32,6 +33,7 @@ export default function App() {
       setData(result);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError("Failed to fetch data. Try again.");
       setData(null);
     }
     setLoading(false);
@@ -58,10 +60,12 @@ export default function App() {
         </div>
       </div>
 
-      <div className="mt-8 w-full max-w-2xl text-center">
-        {loading ? (
-          <p className="text-gray-400">Loading...</p>
-        ) : data ? (
+      <div className="flex flex-col items-center justify-center mt-8 w-full max-w-2xl min-h-[300px]">
+        {loading && <p className="text-gray-400">Loading...</p>}
+
+        {error && <p className="text-red-500">{error}</p>}
+
+        {data && (
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
             <img
               src={data.Poster}
@@ -78,8 +82,6 @@ export default function App() {
             </p>
             <p className="text-sm text-gray-400 mt-2">{data.Plot}</p>
           </div>
-        ) : (
-          <p className="text-gray-500">No results found</p>
         )}
       </div>
     </div>
