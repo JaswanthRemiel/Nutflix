@@ -25,25 +25,28 @@ jobs:
       run:
         working-directory: frontend  # Set working directory to frontend
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
       
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: 'npm'
+
+      - name: Debug - List Files
+        run: ls -la
       
-      - name: Install dependencies
-        run: npm ci
-      
+      - name: Install Dependencies
+        run: npm install  # Changed from npm ci to npm install for missing lock file
+
       - name: Build with Next.js
         run: npm run build
-      
-      - name: Upload artifact
+
+      - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend/out
+          path: frontend/out  # Ensure this is the correct output path
   
   deploy:
     environment:
