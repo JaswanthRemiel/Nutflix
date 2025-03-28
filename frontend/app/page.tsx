@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 export default function Home() {
-  let [count, setCount] = useState(0);
+  const [count, setCount] = useState(0);
   return (
     <div className="centered flex flex-col gap-4 items-center justify-center min-h-screen p-24">
       <Button
