@@ -22,20 +22,11 @@ async function fetchMovie(title) {
     }
 }
 
-// ✅ Appwrite Function (Fixed CORS Issue)
+// ✅ Appwrite Function (Fixes `res.status is not a function`)
 export default async ({ req, res }) => {
     const url = new URL(req.url, 'http://localhost');
     const title = url.searchParams.get('title');
     const { status, body } = await fetchMovie(title);
 
-    res.setHeader("Access-Control-Allow-Origin", "*");  // ✅ Allow all origins (change * to specific domains in production)
-    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS"); 
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-    // ✅ Handle preflight (OPTIONS) requests
-    if (req.method === "OPTIONS") {
-        return res.json({}, 204);
-    }
-
-    return res.json(body, status);
+    return res.json(body, status);  // ✅ Correct usage for Appwrite functions
 };
