@@ -21,7 +21,12 @@ async function fetchMovie(title) {
         return { status: 500, body: { error: "Internal Server Error" } };
     }
 }
-
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    next();
+  });
 // ✅ Appwrite Function (Fixes `res.status is not a function`)
 export default async ({ req, res }) => {
     const url = new URL(req.url, 'http://localhost');
