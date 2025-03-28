@@ -22,19 +22,15 @@ async function fetchMovie(title) {
     }
 }
 
-// ✅ Appwrite Function with CORS Fix
+// ✅ Appwrite Function with Proper CORS Handling
 export default async ({ req, res }) => {
     const url = new URL(req.url, 'http://localhost');
     const title = url.searchParams.get('title');
     const { status, body } = await fetchMovie(title);
 
-    res.setHeader('Access-Control-Allow-Origin', '*'); // ✅ Fix CORS
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        return res.send("", 204); // ✅ Handle preflight request
-    }
-
-    return res.json(body, status);
+    return res.send(body, status, {
+        "Access-Control-Allow-Origin": "*",  // ✅ Fix CORS
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+    });
 };
