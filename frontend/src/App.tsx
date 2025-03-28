@@ -2,31 +2,37 @@ import { useState } from "react";
 
 export default function App() {
   const [query, setQuery] = useState<string>("");
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Movie | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+  interface Movie {
+    Title: string;
+    Year: string;
+    Genre: string;
+    imdbRating: string;
+    Plot: string;
+    Poster: string;
+  }
+
   const fetchData = async () => {
-    if (!query.trim()) return;
+    if (!query) return;
     setLoading(true);
+    setData(null);
+
     try {
       const response = await fetch(
-        `https://67e52ac03d09f16db0e1.appwrite.global/api/movies?title=${query}`
+        `https://67e52ac03d09f16db0e1.appwrite.global/api/movies?title=${encodeURIComponent(
+          query
+        )}`
       );
-
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error("Failed to fetch data");
       }
-
       const result = await response.json();
-      console.log("API Response:", result);
-
-      if (result.Response === "True") {
-        setData([result]); // Convert object to array
-      } else {
-        setData([]);
-      }
+      setData(result);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setData(null);
     }
     setLoading(false);
   };
@@ -55,28 +61,23 @@ export default function App() {
       <div className="mt-8 w-full max-w-2xl text-center">
         {loading ? (
           <p className="text-gray-400">Loading...</p>
-        ) : data.length > 0 ? (
-          data.map((item, index) => (
-            <div
-              key={index}
-              className="bg-gray-800 p-6 rounded-lg shadow-lg text-center"
-            >
-              <img
-                src={item.Poster}
-                alt={item.Title}
-                className="w-40 mx-auto mb-4 rounded-lg"
-              />
-              <h2 className="text-2xl font-bold">
-                {item.Title} ({item.Year})
-              </h2>
-              <p className="text-gray-400">{item.Genre}</p>
-              <p className="text-yellow-500 font-semibold">
-                IMDb Rating:{" "}
-                {item.imdbRating !== "N/A" ? item.imdbRating : "Not Available"}
-              </p>
-              <p className="text-sm text-gray-400 mt-2">{item.Plot}</p>
-            </div>
-          ))
+        ) : data ? (
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+            <img
+              src={data.Poster}
+              alt={data.Title}
+              className="w-40 mx-auto mb-4 rounded-lg"
+            />
+            <h2 className="text-2xl font-bold">
+              {data.Title} ({data.Year})
+            </h2>
+            <p className="text-gray-400">{data.Genre}</p>
+            <p className="text-yellow-500 font-semibold">
+              IMDb Rating:{" "}
+              {data.imdbRating !== "N/A" ? data.imdbRating : "Not Available"}
+            </p>
+            <p className="text-sm text-gray-400 mt-2">{data.Plot}</p>
+          </div>
         ) : (
           <p className="text-gray-500">No results found</p>
         )}
