@@ -39,17 +39,17 @@ jobs:
         run: npm install
         working-directory: frontend  
 
-      - name: Build with Next.js
+      - name: Build with Next.js (Static Export)
         run: npm run build
         working-directory: frontend  
 
-      - name: Debug - List Files After Build
-        run: ls -la frontend
+      - name: Debug - Check Build Output
+        run: ls -la frontend/out || echo "Error: frontend/out is missing!"
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend/out  # Change to frontend/.next if SSR
+          path: frontend/out  # Ensure this exists before deploying
   
   deploy:
     environment:
