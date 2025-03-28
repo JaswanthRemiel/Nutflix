@@ -1,1 +1,3 @@
-SA
+this repository has
+ - frontend
+ - backend
